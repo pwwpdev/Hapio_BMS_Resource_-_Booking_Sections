@@ -760,15 +760,24 @@ router.post('/getServiceIdbyResourceId', async (req, res) => {
 });
 
 // ✅ Update resource (single route only)
-router.put("/updateResource/:resource_id", async (req, res) => {
+router.patch("/updateResource/:resource_id", async (req, res) => {
     try {
         const { resource_id } = req.params;
         const updatePayload = req.body;
+
+        if (!updatePayload || Object.keys(updatePayload).length === 0) {
+            return res.status(400).json({ error: "No update fields provided." });
+        }
+
         const response = await updateResource(resource_id, updatePayload);
-        res.status(200).json({ message: "Resource updated successfully", data: response });
+
+        res.status(200).json({
+            message: "Resource updated successfully",
+            data: response
+        });
     } catch (error) {
         console.error("Error updating resource:", error.response ? error.response.data : error.message);
-        res.status(500).send({ error: error.message });
+        res.status(500).json({ error: error.message });
     }
 });
 
@@ -821,3 +830,4 @@ const gracefulShutdown = () => {
 
 process.on('SIGTERM', gracefulShutdown);
 process.on('SIGINT', gracefulShutdown);
+
